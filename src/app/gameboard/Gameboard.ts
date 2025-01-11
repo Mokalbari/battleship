@@ -5,7 +5,13 @@ type Cell = {
 
 type Direction = "horizontal" | "vertical"
 
+type ShipCoordinates = {
+  token: string
+  coordinates: number[][]
+}
+
 export interface GameboardInterface {
+  getShipCoordinates: (token: string) => number[][] | null
   isVisited: (x: number, y: number) => boolean
   handleShipPlacement: (
     x: number,
@@ -21,10 +27,12 @@ export class Gameboard implements GameboardInterface {
   #size
   #gameboard: Cell[][]
   #shipCounter
+  shipCoordinates: ShipCoordinates[]
   constructor(size: number) {
     this.#size = size
     this.#gameboard = []
-    this.#shipCounter = 0
+    this.shipCoordinates = []
+    this.#shipCounter = this.shipCoordinates.length
     this.#buildGameboard()
   }
 
@@ -45,16 +53,42 @@ export class Gameboard implements GameboardInterface {
   ) {
     if (this.#isCellOccupied(x, y)) return
 
+    const currentShipCoordinates: ShipCoordinates = {
+      token: playerToken,
+      coordinates: [],
+    }
+
     if (direction === "horizontal") {
       for (let i = 0; i < length; i++) {
         this.#gameboard[x + i][y].ship = playerToken
+        currentShipCoordinates.coordinates.push([x + i, y])
       }
     } else {
       for (let i = 0; i < length; i++) {
         this.#gameboard[x][y + i].ship = playerToken
+        currentShipCoordinates.coordinates.push([x, y + i])
       }
     }
-    this.#shipCounter += 1
+
+    this.shipCoordinates.push(currentShipCoordinates)
+  }
+
+  handleAttack(x: number, y: number) {
+    if (this.isVisited(x, y)) return
+
+    if (this.#isCellOccupied(x, y)) {
+      // todo
+      return
+    }
+  }
+
+  getShipCoordinates(token: string) {
+    for (let i = 0; i < this.shipCoordinates.length; i++) {
+      if (this.shipCoordinates[i].token === token) {
+        return this.shipCoordinates[i].coordinates
+      }
+    }
+    return null
   }
 
   #isCellOccupied(x: number, y: number) {
