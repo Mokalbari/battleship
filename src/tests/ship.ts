@@ -1,6 +1,6 @@
 import { expect } from "jsr:@std/expect"
 import { beforeEach, describe, it } from "jsr:@std/testing/bdd"
-import { Ship, ShipInterface } from "../ship/Ship.ts"
+import { Ship, ShipInterface } from "../app/ship/Ship.ts"
 
 describe("ship", () => {
   let ship: ShipInterface
