@@ -10,6 +10,18 @@ type ShipCoordinates = {
   coordinates: number[][]
 }
 
+type PlacementSucceed = {
+  result: true
+  coordinates: number[][]
+}
+
+type PlacementFailed = {
+  result: false
+  error: "is out of bonds" | "cell is occupied"
+}
+
+type PlacementResult = PlacementSucceed | PlacementFailed
+
 export interface GameboardInterface {
   getShipCoordinates: (token: string) => number[][] | null
   isVisited: (x: number, y: number) => boolean
@@ -19,7 +31,7 @@ export interface GameboardInterface {
     length: number,
     playerToken: string,
     direction: Direction
-  ) => void
+  ) => PlacementResult
   isAllSunk: () => boolean
 }
 
@@ -41,7 +53,7 @@ export class Gameboard implements GameboardInterface {
   }
 
   isAllSunk() {
-    return this.#shipCounter === 0 ? true : false
+    return this.#shipCounter === 0
   }
 
   handleShipPlacement(
@@ -50,8 +62,20 @@ export class Gameboard implements GameboardInterface {
     length: number,
     playerToken: string,
     direction: Direction
-  ) {
-    if (this.#isCellOccupied(x, y)) return
+  ): PlacementResult {
+    if (this.#isCellOccupied(x, y)) {
+      return {
+        result: false,
+        error: "cell is occupied",
+      }
+    }
+
+    if (x + length > this.#size - 1 || y + length > this.#size - 1) {
+      return {
+        result: false,
+        error: "is out of bonds",
+      }
+    }
 
     const currentShipCoordinates: ShipCoordinates = {
       token: playerToken,
@@ -71,6 +95,10 @@ export class Gameboard implements GameboardInterface {
     }
 
     this.shipCoordinates.push(currentShipCoordinates)
+    return {
+      result: true,
+      coordinates: currentShipCoordinates.coordinates,
+    }
   }
 
   handleAttack(x: number, y: number) {

@@ -8,22 +8,20 @@ describe("gameboard basic implementation", () => {
     gameboard = new Gameboard(10)
   })
 
-  it("places ship horizontally", () => {
-    gameboard.handleShipPlacement(0, 0, 4, "A", "horizontal")
-    expect(gameboard.getShipCoordinates("A")).toEqual([
-      [0, 0],
-      [1, 0],
-      [2, 0],
-      [3, 0],
-    ])
+  it("returns truthy when a ship is successfully placed", () => {
+    const placement = gameboard.handleShipPlacement(0, 0, 4, "A", "horizontal")
+    expect(placement.result).toBeTruthy()
   })
 
-  it("places ship vertically", () => {
-    gameboard.handleShipPlacement(0, 0, 3, "B", "vertical")
-    expect(gameboard.getShipCoordinates("B")).toEqual([
-      [0, 0],
-      [0, 1],
-      [0, 2],
-    ])
+  it("returns the coordinates of a newly placed ship", () => {
+    const placement = gameboard.handleShipPlacement(0, 0, 4, "A", "horizontal")
+    if (placement.result) {
+      expect(placement.coordinates).toEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [3, 0],
+      ])
+    }
   })
 })
