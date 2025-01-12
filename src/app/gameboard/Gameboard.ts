@@ -1,38 +1,10 @@
-type Cell = {
-  ship: null | string
-  hit: boolean
-}
-
-type Direction = "horizontal" | "vertical"
-
-type ShipCoordinates = {
-  token: string
-  coordinates: number[][]
-}
-
-type PlacementSucceed = {
-  success: true
-  coordinates: number[][]
-}
-
-type PlacementFailed = {
-  success: false
-  error: "is out of bounds" | "cell is occupied"
-}
-
-type PlacementResult = PlacementSucceed | PlacementFailed
-
-type AttackSuceed = {
-  success: true
-  coordinates: number[]
-}
-
-type AttackFailed = {
-  success: false
-  error: "is out of bounds" | "cell is empty"
-}
-
-type AttackOutput = AttackSuceed | AttackFailed
+import type {
+  AttackOutput,
+  Cell,
+  Direction,
+  PlacementResult,
+  ShipCoordinates,
+} from "../../lib/definitions.ts"
 
 export interface GameboardInterface {
   getShipCoordinates: (token: string) => number[][] | null
