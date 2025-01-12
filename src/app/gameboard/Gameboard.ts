@@ -11,16 +11,28 @@ type ShipCoordinates = {
 }
 
 type PlacementSucceed = {
-  result: true
+  success: true
   coordinates: number[][]
 }
 
 type PlacementFailed = {
-  result: false
-  error: "is out of bonds" | "cell is occupied"
+  success: false
+  error: "is out of bounds" | "cell is occupied"
 }
 
 type PlacementResult = PlacementSucceed | PlacementFailed
+
+type AttackSuceed = {
+  success: true
+  coordinates: number[]
+}
+
+type AttackFailed = {
+  success: false
+  error: "is out of bounds" | "cell is empty"
+}
+
+type AttackOutput = AttackSuceed | AttackFailed
 
 export interface GameboardInterface {
   getShipCoordinates: (token: string) => number[][] | null
@@ -33,6 +45,7 @@ export interface GameboardInterface {
     direction: Direction
   ) => PlacementResult
   isAllSunk: () => boolean
+  handleAttack: (x: number, y: number) => AttackOutput
 }
 
 export class Gameboard implements GameboardInterface {
@@ -65,15 +78,15 @@ export class Gameboard implements GameboardInterface {
   ): PlacementResult {
     if (this.#isCellOccupied(x, y)) {
       return {
-        result: false,
+        success: false,
         error: "cell is occupied",
       }
     }
 
     if (x + length > this.#size - 1 || y + length > this.#size - 1) {
       return {
-        result: false,
-        error: "is out of bonds",
+        success: false,
+        error: "is out of bounds",
       }
     }
 
@@ -96,17 +109,38 @@ export class Gameboard implements GameboardInterface {
 
     this.shipCoordinates.push(currentShipCoordinates)
     return {
-      result: true,
+      success: true,
       coordinates: currentShipCoordinates.coordinates,
     }
   }
 
-  handleAttack(x: number, y: number) {
-    if (this.isVisited(x, y)) return
+  handleAttack(x: number, y: number): AttackOutput {
+    if (x > this.#size - 1 || y > this.#size - 1 || x < 0 || y < 0) {
+      return {
+        success: false,
+        error: "is out of bounds",
+      }
+    }
+
+    if (this.isVisited(x, y)) {
+      return {
+        success: false,
+        error: "cell is empty",
+      }
+    }
 
     if (this.#isCellOccupied(x, y)) {
-      // todo
-      return
+      this.#gameboard[x][y].hit = true
+
+      return {
+        success: true,
+        coordinates: [x, y],
+      }
+    }
+
+    return {
+      success: false,
+      error: "cell is empty",
     }
   }
 
