@@ -24,7 +24,7 @@ export class Gameboard implements GameboardInterface {
   #size: number
   #gameboard: Cell[][]
   #shipCounter: number
-  occupiedCell = new Set<number[]>()
+  occupiedCell = new Set<string>()
   constructor(size: number) {
     this.#size = size
     this.#gameboard = []
@@ -33,7 +33,7 @@ export class Gameboard implements GameboardInterface {
   }
 
   isCellOccupied(x: number, y: number): boolean {
-    return this.occupiedCell.has([x, y])
+    return this.occupiedCell.has(this.#encodeCoordinates(x, y))
   }
 
   isVisited(x: number, y: number) {
@@ -72,11 +72,11 @@ export class Gameboard implements GameboardInterface {
       if (isHorizontal) {
         const newX = x + i
         this.#gameboard[newX][y].ship = newShip
-        this.occupiedCell.add([newX, y])
+        this.occupiedCell.add(this.#encodeCoordinates(newX, y))
       } else {
-        const newY = y + 1
+        const newY = y + i
         this.#gameboard[x][newY].ship = newShip
-        this.occupiedCell.add([x, newY])
+        this.occupiedCell.add(this.#encodeCoordinates(x, newY))
       }
     }
 
@@ -85,17 +85,17 @@ export class Gameboard implements GameboardInterface {
   }
 
   handleAttack(x: number, y: number): AttackOutput {
-    if (this.isVisited(x, y)) {
-      return {
-        success: false,
-        error: "cell is empty",
-      }
-    }
-
     if (x > this.#size - 1 || y > this.#size - 1 || x < 0 || y < 0) {
       return {
         success: false,
         error: "is out of bounds",
+      }
+    }
+
+    if (this.isVisited(x, y)) {
+      return {
+        success: false,
+        error: "cell is empty",
       }
     }
 
@@ -122,6 +122,10 @@ export class Gameboard implements GameboardInterface {
     return direction === "horizontal"
       ? x + length > this.#size - 1 || y > this.#size - 1 || x < 0 || y < 0
       : y + length > this.#size - 1 || x > this.#size - 1 || y < 0 || x < 0
+  }
+
+  #encodeCoordinates(x: number, y: number) {
+    return `${x}${y}`
   }
 
   #buildGameboard() {
