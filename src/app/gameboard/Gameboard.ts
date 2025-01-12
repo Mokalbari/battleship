@@ -1,136 +1,81 @@
-import type {
-  AttackOutput,
-  Cell,
-  Direction,
-  PlacementResult,
-  ShipCoordinates,
-} from "../../lib/definitions.ts"
+import type { Cell, Direction, PlacementResult } from "../../lib/definitions.ts"
+import { Ship } from "../ship/Ship.ts"
 
 export interface GameboardInterface {
-  getShipCoordinates: (token: string) => number[][] | null
-  isVisited: (x: number, y: number) => boolean
+  isCellOccupied: (x: number, y: number) => boolean
   handleShipPlacement: (
     x: number,
     y: number,
     length: number,
-    playerToken: string,
+    token: string,
     direction: Direction
   ) => PlacementResult
-  isAllSunk: () => boolean
-  handleAttack: (x: number, y: number) => AttackOutput
 }
 
 export class Gameboard implements GameboardInterface {
   #size
   #gameboard: Cell[][]
-  #shipCounter
-  shipCoordinates: ShipCoordinates[]
+  occupiedCell = new Set<number>()
   constructor(size: number) {
     this.#size = size
     this.#gameboard = []
-    this.shipCoordinates = []
-    this.#shipCounter = this.shipCoordinates.length
+
     this.#buildGameboard()
   }
 
-  isVisited(x: number, y: number) {
-    return this.#gameboard[x][y].hit
-  }
-
-  isAllSunk() {
-    return this.#shipCounter === 0
+  isCellOccupied(x: number, y: number): boolean {
+    return this.occupiedCell.has(x) || this.occupiedCell.has(y)
   }
 
   handleShipPlacement(
     x: number,
     y: number,
     length: number,
-    playerToken: string,
+    token: string,
     direction: Direction
   ): PlacementResult {
-    if (this.#isCellOccupied(x, y)) {
-      return {
-        success: false,
-        error: "cell is occupied",
+    // check the edge cases
+    if (this.#isOutOfBounds(x, y, length, direction))
+      return { success: false, error: "is out of bounds" }
+
+    const isHorizontal = direction === "horizontal"
+    for (let i = 0; i < length; i++) {
+      const newX = isHorizontal ? x + i : x
+      const newY = isHorizontal ? y : y + i
+
+      if (this.isCellOccupied(newX, newY)) {
+        return { success: false, error: "cell is occupied" }
       }
     }
 
-    if (x + length > this.#size - 1 || y + length > this.#size - 1) {
-      return {
-        success: false,
-        error: "is out of bounds",
+    const newShip = new Ship(length, token)
+
+    for (let i = 0; i < length; i++) {
+      if (isHorizontal) {
+        const newX = x + i
+        this.#gameboard[newX][y].ship = newShip
+        this.occupiedCell.add(newX)
+        this.occupiedCell.add(y)
+      } else {
+        const newY = y + 1
+        this.#gameboard[x][newY].ship = newShip
+        this.occupiedCell.add(newY)
+        this.occupiedCell.add(x)
       }
     }
 
-    const currentShipCoordinates: ShipCoordinates = {
-      token: playerToken,
-      coordinates: [],
-    }
-
-    if (direction === "horizontal") {
-      for (let i = 0; i < length; i++) {
-        this.#gameboard[x + i][y].ship = playerToken
-        currentShipCoordinates.coordinates.push([x + i, y])
-      }
-    } else {
-      for (let i = 0; i < length; i++) {
-        this.#gameboard[x][y + i].ship = playerToken
-        currentShipCoordinates.coordinates.push([x, y + i])
-      }
-    }
-
-    this.shipCoordinates.push(currentShipCoordinates)
-    return {
-      success: true,
-      coordinates: currentShipCoordinates.coordinates,
-    }
+    return { success: true }
   }
 
-  handleAttack(x: number, y: number): AttackOutput {
-    if (x > this.#size - 1 || y > this.#size - 1 || x < 0 || y < 0) {
-      return {
-        success: false,
-        error: "is out of bounds",
-      }
-    }
-
-    if (this.isVisited(x, y)) {
-      return {
-        success: false,
-        error: "cell is empty",
-      }
-    }
-
-    if (this.#isCellOccupied(x, y)) {
-      this.#gameboard[x][y].hit = true
-
-      return {
-        success: true,
-        coordinates: [x, y],
-      }
-    }
-
-    return {
-      success: false,
-      error: "cell is empty",
-    }
-  }
-
-  getShipCoordinates(token: string) {
-    for (let i = 0; i < this.shipCoordinates.length; i++) {
-      if (this.shipCoordinates[i].token === token) {
-        return this.shipCoordinates[i].coordinates
-      }
-    }
-    return null
-  }
-
-  #isCellOccupied(x: number, y: number) {
-    if (this.#gameboard[x][y].ship) {
-      return true
-    }
-
-    return false
+  #isOutOfBounds(
+    x: number,
+    y: number,
+    length: number,
+    direction: Direction
+  ): boolean {
+    return direction === "horizontal"
+      ? x + length > this.#size - 1 || y > this.#size - 1 || x < 0 || y < 0
+      : y + length > this.#size - 1 || x > this.#size - 1 || y < 0 || x < 0
   }
 
   #buildGameboard() {

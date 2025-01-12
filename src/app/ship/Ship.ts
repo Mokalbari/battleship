@@ -3,17 +3,20 @@ export interface ShipInterface {
   life: () => number
   hit: () => number
   isSunk: () => boolean
+  token: () => string
 }
 
 export class Ship implements ShipInterface {
   #length
   #life
   #isSunk
+  #token
 
-  constructor(length: number) {
+  constructor(length: number, token: string) {
     this.#length = length
     this.#life = length
     this.#isSunk = false
+    this.#token = token
   }
 
   length() {
@@ -26,6 +29,10 @@ export class Ship implements ShipInterface {
 
   isSunk() {
     return this.#isSunk
+  }
+
+  token() {
+    return this.#token
   }
 
   hit() {

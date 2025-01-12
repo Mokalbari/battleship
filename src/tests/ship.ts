@@ -6,7 +6,7 @@ describe("ship", () => {
   let ship: ShipInterface
 
   beforeEach(() => {
-    ship = new Ship(4)
+    ship = new Ship(4, "A")
   })
 
   it("returns the length of 4", () => {
@@ -15,6 +15,10 @@ describe("ship", () => {
 
   it("returns a life of 4", () => {
     expect(ship.life()).toBe(4)
+  })
+
+  it("returns the ship id", () => {
+    expect(ship.token()).toBe("A")
   })
 
   it("decrements life", () => {

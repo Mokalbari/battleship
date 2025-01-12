@@ -1,5 +1,7 @@
+import { Ship } from "../app/ship/Ship.ts"
+
 export type Cell = {
-  ship: null | string
+  ship: Ship | null
   hit: boolean
 }
 
@@ -12,7 +14,6 @@ export type ShipCoordinates = {
 
 export type PlacementSucceed = {
   success: true
-  coordinates: number[][]
 }
 
 export type PlacementFailed = {

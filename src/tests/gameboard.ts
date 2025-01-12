@@ -37,3 +37,19 @@ describe("gameboard basic implementation", () => {
     if (!placement.success) expect(placement.error).toBe("is out of bounds")
   })
 })
+
+describe("complexe gameboard implementation", () => {
+  const gameboard = new Gameboard(10)
+
+  gameboard.handleShipPlacement(0, 0, 4, "A", "horizontal")
+  gameboard.handleShipPlacement(5, 5, 3, "B", "vertical")
+  gameboard.handleShipPlacement(7, 2, 2, "C", "vertical")
+
+  it("can reveive an attack", () => {
+    expect(gameboard.handleAttack(2, 0).success).toBeTruthy()
+  })
+
+  it("can fail an attack not covered by a ship", () => {
+    expect(gameboard.handleAttack(3, 4).success).toBeFalsy()
+  })
+})
