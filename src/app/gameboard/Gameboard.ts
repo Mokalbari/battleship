@@ -32,12 +32,16 @@ export class Gameboard implements GameboardInterface {
     this.#buildGameboard()
   }
 
+  __debug_publicGetCell(x: number, y: number) {
+    return this.#gameboard[x][y]
+  }
+
   isCellOccupied(x: number, y: number): boolean {
     return this.occupiedCell.has(this.#encodeCoordinates(x, y))
   }
 
   isVisited(x: number, y: number) {
-    return this.#gameboard[x][y].hit
+    return this.#gameboard[x][y].visited
   }
 
   isAllSunk() {
@@ -105,11 +109,12 @@ export class Gameboard implements GameboardInterface {
       if (currentShip.isSunk()) {
         this.#shipCounter--
       }
-      this.#gameboard[x][y].hit = true
 
+      this.#gameboard[x][y].visited = true
       return { success: true, coordinates: [x, y] }
     }
 
+    this.#gameboard[x][y].visited = true
     return { success: false, error: "cell is empty" }
   }
 
@@ -133,7 +138,7 @@ export class Gameboard implements GameboardInterface {
       const rows: Cell[] = []
 
       for (let j = 0; j < this.#size; j++) {
-        rows.push({ ship: null, hit: false })
+        rows.push({ ship: null, visited: false })
       }
       this.#gameboard.push(rows)
     }

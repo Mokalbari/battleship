@@ -2,7 +2,7 @@ import { Ship } from "../app/ship/Ship.ts"
 
 export type Cell = {
   ship: Ship | null
-  hit: boolean
+  visited: boolean
 }
 
 export type Direction = "horizontal" | "vertical"
